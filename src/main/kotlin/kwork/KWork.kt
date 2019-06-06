@@ -9,6 +9,7 @@ import kwork.proxy.CommonProxy
 
 @Mod(modid = "kwork", name = "KWork", version = "1.0")
 object KWork {
+    @JvmStatic
     @SidedProxy(clientSide = "kwork.proxy.ClientProxy", serverSide = "kwork.proxy.CommonProxy")
     lateinit var proxy: CommonProxy
 
