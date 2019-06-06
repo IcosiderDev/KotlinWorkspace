@@ -1,0 +1,13 @@
+[{
+  "modid": "kwork",
+  "name": "KWork",
+  "description": "KWork mod",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Ivasik"],
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}]
