@@ -10,5 +10,7 @@ build
 
 # Остальное
 run
+logs
+logs/*
 *.rar
 *.zip

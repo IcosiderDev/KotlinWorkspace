@@ -1,10 +1,13 @@
 buildscript {
-    ext.kotlinVersion = "1.3.71"
+    ext.kotlinVersion = "1.3.72"
     repositories {
+        mavenCentral()
         jcenter()
         maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url = 'https://repo.spongepowered.org/maven' }
     }
     dependencies {
+        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
@@ -12,20 +15,31 @@ buildscript {
 
 apply plugin: 'kotlin'
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'org.spongepowered.mixin'
 
 version = "2.0"
 group = "kwork"
 archivesBaseName = "KWork"
 
-targetCompatibility = JavaVersion.VERSION_1_8
-sourceCompatibility = JavaVersion.VERSION_1_8
-
+targetCompatibility = sourceCompatibility = JavaVersion.VERSION_1_8
 idea.module.inheritOutputDirs = true
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "Spongepowered"
+        url = "https://repo.spongepowered.org/maven"
+    }
+}
 
 minecraft {
     version = "1.12.2-14.23.5.2847"
     runDir = "run"
     mappings = "snapshot_20171003"
+}
+
+mixin {
+    add sourceSets.main, "mixins.kwork.refmap.json"
 }
 
 configurations {
@@ -35,15 +49,30 @@ configurations {
 
 dependencies {
     shade "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    shade "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    shade('org.spongepowered:mixin:0.8.1-SNAPSHOT') {
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+        exclude module: 'gson'
+        exclude module: 'commons-io'
+        exclude module: 'commons-codec'
+    }
 }
 
 jar {
     destinationDir = file("compiled")
 
+    manifest {
+        attributes(
+                'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+                'MixinConfigs': 'mixins.kwork.json',
+                'FMLCorePluginContainsFMLMod': 'true',
+                'ForceLoadAsMod': 'true'
+        )
+    }
+
     configurations.shade.each { dep ->
-        from(project.zipTree(dep)) {
-            exclude 'META-INF', 'META-INF/**'
-        }
+        from(project.zipTree(dep))
     }
 }
 

@@ -1,0 +1,9 @@
+{
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.8.1",
+  "refmap": "mixins.kwork.refmap.json",
+  "package": "kwork.common.mixin",
+  "client": [
+    "client.MixinMinecraft"
+  ]
+}
