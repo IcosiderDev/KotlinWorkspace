@@ -49,6 +49,10 @@ dependencies {
 
 jar {
     destinationDir = file("compiled")
+    
+    exclude '**/*.kotlin_metadata'
+    exclude '**/*.kotlin_module'
+    exclude '**/*.kotlin_builtins'
 
     configurations.shade.each { dep ->
         from(project.zipTree(dep)) {
