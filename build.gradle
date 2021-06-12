@@ -70,6 +70,10 @@ jar {
                 'ForceLoadAsMod': 'true'
         )
     }
+    
+    exclude '**/*.kotlin_metadata'
+    exclude '**/*.kotlin_module'
+    exclude '**/*.kotlin_builtins'
 
     configurations.shade.each { dep ->
         from(project.zipTree(dep))
