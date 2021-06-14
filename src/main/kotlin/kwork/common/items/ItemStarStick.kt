@@ -1,33 +1,35 @@
 package kwork.common.items
 
 import kwork.api.ManaImpl
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
+import net.minecraft.item.ItemGroup
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.util.Hand
+import net.minecraft.util.Util
+import net.minecraft.util.text.Color
+import net.minecraft.util.text.StringTextComponent
 import net.minecraft.world.World
+import net.minecraft.world.chunk.Chunk
 
-class ItemStarStick(name: String = "starStick") : Item() {
+class ItemStarStick(name: String = "starStick") : Item(Properties().tab(ItemGroup.TAB_MATERIALS)) {
     init {
         this.setRegistryName(name)
-        this.unlocalizedName = name
     }
 
-    override fun onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack> {
-        if (!world.isRemote) {
-            val chunk = world.getChunkFromBlockCoords(player.position)
-            val mana = ManaImpl.get(chunk) ?: return ActionResult(EnumActionResult.PASS, player.getHeldItem(hand))
+    override fun use(world: World, player: PlayerEntity, hand: Hand): ActionResult<ItemStack> {
+        if (!world.isClientSide) {
+            val chunk = world.getChunk(player.blockPosition())
+            ManaImpl.get(chunk as Chunk).ifPresent { mana ->
+                mana.fill(1.25)
 
-            mana.fill(1.25)
-
-            player.sendMessage(TextComponentString(mana.toString()).apply {
-                this.style.color = TextFormatting.GOLD
-            })
+                player.sendMessage(StringTextComponent(mana.toString()).apply {
+                    this.style.withColor(Color.fromRgb(0x55FF55))
+                }, Util.NIL_UUID)
+            }
+            return ActionResult.success(player.getItemInHand(hand))
         }
-        return super.onItemRightClick(world, player, hand)
+        return ActionResult.pass(player.getItemInHand(hand))
     }
 }

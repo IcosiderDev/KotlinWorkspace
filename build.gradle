@@ -1,28 +1,36 @@
 buildscript {
-    ext.kotlinVersion = "1.3.72"
+    ext.kotlinVersion = "1.5.10"
     repositories {
         mavenCentral()
-        jcenter()
-        maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://repo.spongepowered.org/maven' }
     }
     dependencies {
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
     }
 }
 
+apply plugin: 'idea'
 apply plugin: 'kotlin'
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = "2.0"
+version = "3.0.0"
 group = "kwork"
 archivesBaseName = "KWork"
 
-targetCompatibility = sourceCompatibility = JavaVersion.VERSION_1_8
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 idea.module.inheritOutputDirs = true
+
+compileKotlin {
+    kotlinOptions.useIR = true
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
 
 repositories {
     mavenCentral()
@@ -33,9 +41,46 @@ repositories {
 }
 
 minecraft {
-    version = "1.12.2-14.23.5.2847"
-    runDir = "run"
-    mappings = "snapshot_20171003"
+    mappings channel: 'official', version: '1.16.5'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                kwork {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'kwork', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                kwork {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
 }
 
 mixin {
@@ -48,48 +93,37 @@ configurations {
 }
 
 dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.5-36.1.31'
+
+    annotationProcessor('org.spongepowered:mixin:0.8.3-SNAPSHOT:processor')
+
     shade "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     shade "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-    shade('org.spongepowered:mixin:0.8.1-SNAPSHOT') {
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-        exclude module: 'gson'
-        exclude module: 'commons-io'
-        exclude module: 'commons-codec'
-    }
+    shade 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.0'
 }
 
 jar {
     destinationDir = file("compiled")
 
     manifest {
-        attributes(
+        attributes([
+                "Specification-Title": "kwork",
+                "Specification-Vendor": "kwork",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" : "kwork",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-                'MixinConfigs': 'mixins.kwork.json',
-                'FMLCorePluginContainsFMLMod': 'true',
-                'ForceLoadAsMod': 'true'
-        )
+                'MixinConfigs': 'mixins.kwork.json'
+        ])
     }
     
     exclude '**/*.kotlin_metadata'
     exclude '**/*.kotlin_module'
     exclude '**/*.kotlin_builtins'
 
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep))
-    }
+    from configurations.shade.collect { it.isDirectory() ? it : zipTree(it)}
 }
 
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-        
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-}
+jar.finalizedBy('reobfJar')

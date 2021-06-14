@@ -2,22 +2,23 @@ package kwork.server
 
 import kwork.KWork
 import kwork.api.ManaProvider
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.util.Util
+import net.minecraft.util.text.Color
+import net.minecraft.util.text.StringTextComponent
 import net.minecraft.world.chunk.Chunk
 import net.minecraftforge.event.AttachCapabilitiesEvent
+import net.minecraftforge.event.entity.player.PlayerEvent
+import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent
 
 @Mod.EventBusSubscriber
 object Events {
     @JvmStatic
     @SubscribeEvent
     fun onLoggedIn(e: PlayerEvent.PlayerLoggedInEvent) {
-        e.player.sendMessage(TextComponentString("Hello, ${e.player.name}!").apply {
-            this.style.color = TextFormatting.GREEN
-        })
+        e.player.sendMessage(StringTextComponent("Hello, ${e.player.name}!").apply {
+            this.style.withColor(Color.fromRgb(0x00FF00))
+        }, Util.NIL_UUID)
     }
 
     @JvmStatic

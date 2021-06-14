@@ -1,4 +1,4 @@
-# KotlinWorkspace 1.12.2 ![Build](https://github.com/Ivasik78/KotlinWorkspace/workflows/Build/badge.svg)
+# KotlinWorkspace 1.16.5 ![Build](https://github.com/Ivasik78/KotlinWorkspace/workflows/Build/badge.svg)
 Полностью рабочая и готовая к разработке на kotlin работа-космос.
 
 ## Пояснение на счёт Mixin

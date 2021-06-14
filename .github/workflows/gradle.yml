@@ -5,9 +5,9 @@ name: Build
 
 on:
   push:
-    branches: [ 1.12.2 ]
+    branches: [ 1.16.5 ]
   pull_request:
-    branches: [ 1.12.2 ]
+    branches: [ 1.16.5 ]
 
 jobs:
   build:
@@ -26,5 +26,5 @@ jobs:
       run: ./gradlew build
     - uses: actions/upload-artifact@v2
       with:
-        name: KWork-2.0
-        path: compiled/KWork-2.0.jar
+        name: KWork-3.0.0
+        path: compiled/KWork-3.0.0.jar

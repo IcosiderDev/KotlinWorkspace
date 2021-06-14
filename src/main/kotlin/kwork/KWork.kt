@@ -1,44 +1,30 @@
 package kwork
 
+import kwork.KWork.modId
 import kwork.api.Mana
-import kwork.common.CommonProxy
+import kwork.api.ManaImpl
+import kwork.api.ManaStorage
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
+import net.minecraftforge.common.capabilities.CapabilityManager
+import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.SidedProxy
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 
-@Mod(modid = "kwork", name = "KWork", version = "1.0")
+@Mod(modId)
+@Mod.EventBusSubscriber(modid = modId, bus = Mod.EventBusSubscriber.Bus.MOD)
 object KWork {
-    val manaCapName = ResourceLocation("kwork", "mana")
-
     @JvmStatic
     @CapabilityInject(Mana::class)
     lateinit var manaCap: Capability<Mana>
 
-    @JvmStatic
-    @SidedProxy(clientSide = "kwork.client.ClientProxy", serverSide = "kwork.common.CommonProxy")
-    lateinit var proxy: CommonProxy
+    const val modId = "kwork"
 
-    @JvmStatic
-    @Mod.InstanceFactory
-    fun instance() = KWork
+    val manaCapName = ResourceLocation(modId, "mana")
 
-    @Mod.EventHandler
-    fun pre(e: FMLPreInitializationEvent) {
-        proxy.pre(e)
-    }
-
-    @Mod.EventHandler
-    fun init(e: FMLInitializationEvent) {
-        proxy.init(e)
-    }
-
-    @Mod.EventHandler
-    fun post(e: FMLPostInitializationEvent) {
-        proxy.post(e)
+    @SubscribeEvent
+    fun setup(e: FMLCommonSetupEvent) {
+        CapabilityManager.INSTANCE.register(Mana::class.java, ManaStorage()) { ManaImpl() }
     }
 }

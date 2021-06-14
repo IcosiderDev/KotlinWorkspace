@@ -1,24 +1,27 @@
 package kwork.api
 
 import kwork.KWork
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundNBT
+import net.minecraft.util.Direction
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilitySerializable
+import net.minecraftforge.common.util.LazyOptional
 
-class ManaProvider : ICapabilitySerializable<NBTTagCompound> {
-    private val capImpl = KWork.manaCap.defaultInstance
-
-    override fun <T : Any?> getCapability(cap: Capability<T>, side: EnumFacing?): T? =
-            if (cap === KWork.manaCap) KWork.manaCap.cast(capImpl) else null
-
-    override fun deserializeNBT(nbt: NBTTagCompound) {
-        KWork.manaCap.storage.readNBT(KWork.manaCap, capImpl, EnumFacing.DOWN, nbt)
+class ManaProvider : ICapabilitySerializable<CompoundNBT> {
+    private val holder = LazyOptional.of {
+        KWork.manaCap.defaultInstance!!
     }
 
-    override fun serializeNBT() =
-            KWork.manaCap.storage.writeNBT(KWork.manaCap, capImpl, EnumFacing.DOWN) as NBTTagCompound
+    override fun <T : Any?> getCapability(cap: Capability<T>, side: Direction?): LazyOptional<T> =
+        if (cap === KWork.manaCap) holder.cast() else LazyOptional.empty()
 
-    override fun hasCapability(cap: Capability<*>, side: EnumFacing?) =
-            cap === KWork.manaCap
+    override fun deserializeNBT(nbt: CompoundNBT) =
+        KWork.manaCap.storage.readNBT(KWork.manaCap, getCapOrThrow(), Direction.DOWN, nbt)
+
+    override fun serializeNBT() =
+        KWork.manaCap.storage.writeNBT(KWork.manaCap, getCapOrThrow(), Direction.DOWN) as CompoundNBT
+
+    private fun getCapOrThrow() = holder.orElseThrow {
+        NullPointerException("Mana Capability was empty")
+    }
 }

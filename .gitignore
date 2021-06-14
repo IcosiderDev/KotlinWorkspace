@@ -1,4 +1,5 @@
 # Idea
+.idea
 out
 *.ipr
 *.iws
@@ -12,5 +13,7 @@ build
 run
 logs
 logs/*
+compiled
+compiled/*
 *.rar
 *.zip
